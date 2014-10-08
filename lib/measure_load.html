@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<link rel="import" href="../../packages/polymer/polymer.html">
+
+<polymer-element name="measure-load">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+      #drawing {
+        overflow: hidden;
+      }
+      #drawing > div {
+        position: relative !important;
+        top: auto !important;
+        left: 0px;
+        margin: 10px 0 10px -40px;
+      }
+    </style>
+    <div id="drawing"></div>
+  </template>
+  <script type="application/dart" src="measure_load.dart"></script>
+</polymer-element>

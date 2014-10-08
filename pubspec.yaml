@@ -1,0 +1,10 @@
+name: polymer_perf_elements
+version: 0.0.1
+description: Some simple elements to help doing common performance measurements for Polymer apps and elements.
+dependencies:
+  episodes: ">=0.4.0 <0.4.1"
+  polymer: ">=0.15.0 <0.16.0"
+transformers:
+- polymer:
+    entry_points:
+    - example/index.html

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="import" href="packages/polymer/polymer.html">
+  <link rel="import" href="packages/polymer_perf_elements/measure_create.html">
+  <link rel="import" href="packages/polymer_perf_elements/measure_load.html">
+</head>
+<body unresolved>
+  <h2>Page load time</h2>
+  <measure-load></measure-load>
+
+  <polymer-element name="x-a">
+    <template>I am an x-a!</template>
+  </polymer-element>
+  <h2>Custom element creation, 100 elements</h2>
+  <measure-create id="create100" numToCreate="100" tagName="x-a"></measure-create>
+  <h2>Custom element creation, 1000 elements</h2>
+  <measure-create id="create1000" numToCreate="1000" tagName="x-a"></measure-create>
+  <h2>Custom element creation, 10000 elements</h2>
+  <measure-create id="create10000" numToCreate="10000" tagName="x-a"></measure-create>
+
+  <script type="application/dart">
+    import 'dart:async';
+    import 'dart:html';
+    import 'package:polymer/polymer.dart';
+    import 'package:polymer_perf_elements/measure_create.dart';
+    import 'package:polymer_perf_elements/measure_load.dart';
+
+    @CustomTag('x-a')
+    class XA extends PolymerElement {
+      XA.created() : super.created();
+    }
+
+    main() {
+      // You can add additional marks and measurements to the measure-load
+      // element as you see fit. By default it only captures basic stats.
+      var mainTime = new DateTime.now().millisecondsSinceEpoch;
+      initPolymer().run(() {
+        var initPolymerTime = new DateTime.now().millisecondsSinceEpoch;
+        Polymer.onReady.then((_) {
+          var polymerOnReadyTime = new DateTime.now().millisecondsSinceEpoch;
+          // Now that its ready, we can add the times we captured as marks
+          // and add measurements, the graph will automatically render again
+          // by default in the next frame.
+          var loadTime = (querySelector('measure-load') as MeasureLoad);
+          loadTime.mark('main', mainTime);
+          loadTime.mark('initDone', initPolymerTime);
+          loadTime.mark('polymerReady', polymerOnReadyTime);
+          loadTime.measure('start -> main', 'starttime', 'main');
+          loadTime.measure('main -> init done', 'main', 'initDone');
+          loadTime.measure(
+              'init done -> polymer ready', 'initDone', 'polymerReady');
+          loadTime.measure(
+              'start -> polymer ready', 'starttime', 'polymerReady');
+
+          // Auto-run our other tests.
+          new Future(() {}).then((_) {
+            var create100 = (querySelector('#create100') as MeasureCreate);
+            var create1000 = (querySelector('#create1000') as MeasureCreate);
+            var create10000 = (querySelector('#create10000') as MeasureCreate);
+            create100.test().then(
+                (_) => create1000.test()).then(
+                    (_) => create10000.test());
+          });
+        });
+      });
+    }
+  </script>
+</body>
+</html>

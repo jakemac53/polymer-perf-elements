@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<link rel="import" href="../../packages/polymer/polymer.html">
+
+<polymer-element name="measure-create" attributes="tagName">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+      #drawing {
+        overflow: hidden;
+      }
+      #drawing > div {
+        position: relative !important;
+        top: auto !important;
+        margin: 10px 0 10px -40px;
+      }
+    </style>
+    <content></content>
+    <button id="button" on-click='{{test}}'>test</button>
+    <div id="status"></div>
+    <div id="drawing"></div>
+    <div id="container"></div>
+  </template>
+  <script type="application/dart" src="measure_create.dart"></script>
+</polymer-element>
