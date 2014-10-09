@@ -67,7 +67,7 @@
 
     void runTest(DivElement test, String path) {
       ButtonElement button = test.querySelector(".run");
-      test.querySelector('.hidden').classes.remove('hidden');
+      test.querySelector('.results').classes.remove('hidden');
 
       Map<String, List<int>> measures = {};
       button.disabled = true;
@@ -91,15 +91,19 @@
       IFrameElement iframe = new IFrameElement()..src=path;
       loadDiv.append(iframe);
 
-      var jsIframe = new JsObject.fromBrowserObject(iframe);
-      var contentWindow = jsIframe['contentWindow'];
-      jsIframe['contentWindow'].callMethod('addEventListener', ['message', (e) {
-        if (_handleEpisodeMessage(measures, e)) {
-          _updateStats(test, measures);
-          _runNextTest(
-              test, path, measures, numToRun, ++testNum, completer);
-        }
-      }]);
+      // Have to wait until the iframe is loaded to start listening, otherwise
+      // in dart2js mode we get errors.
+      iframe.onLoad.listen((_) {
+        var jsIframe = new JsObject.fromBrowserObject(iframe);
+        var contentWindow = jsIframe['contentWindow'];
+        jsIframe['contentWindow'].callMethod('addEventListener', ['message', (e) {
+          if (_handleEpisodeMessage(measures, e)) {
+            _updateStats(test, measures);
+            _runNextTest(
+                test, path, measures, numToRun, ++testNum, completer);
+          }
+        }]);
+      });
 
       return completer.future;
     }
