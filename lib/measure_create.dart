@@ -71,7 +71,6 @@ class MeasureCreate extends PolymerElement {
         });
       });
     });
-
   }
 
   void addElements(int num) {

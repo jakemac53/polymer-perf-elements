@@ -1,11 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <!-- Add some global js variables with times. We will report these later.-->
+  <script>var head = (new Date()).getTime();</script>
+  <script src="packages/web_components/platform.js"></script>
+  <script>var platform = (new Date()).getTime();</script>
   <link rel="import" href="packages/polymer/polymer.html">
+  <script>var polymerHtml = (new Date()).getTime();</script>
   <link rel="import" href="packages/polymer_perf_elements/measure_create.html">
   <link rel="import" href="packages/polymer_perf_elements/measure_load.html">
+  <script>var elementImports = (new Date()).getTime();</script>
 </head>
 <body unresolved>
+  <script>var bodyStart = (new Date()).getTime();</script>
   <h2>Page load time</h2>
   <measure-load></measure-load>
 
@@ -13,15 +20,19 @@
     <template>I am an x-a!</template>
   </polymer-element>
   <h2>Custom element creation, 100 elements</h2>
-  <measure-create id="create100" numToCreate="100" tagName="x-a"></measure-create>
+  <measure-create id="create100" numToCreate="100" tagName="x-a">
+  </measure-create>
   <h2>Custom element creation, 1000 elements</h2>
-  <measure-create id="create1000" numToCreate="1000" tagName="x-a"></measure-create>
+  <measure-create id="create1000" numToCreate="1000" tagName="x-a">
+  </measure-create>
   <h2>Custom element creation, 10000 elements</h2>
-  <measure-create id="create10000" numToCreate="10000" tagName="x-a"></measure-create>
+  <measure-create id="create10000" numToCreate="10000" tagName="x-a">
+  </measure-create>
 
   <script type="application/dart">
     import 'dart:async';
     import 'dart:html';
+    import 'dart:js';
     import 'package:polymer/polymer.dart';
     import 'package:polymer_perf_elements/measure_create.dart';
     import 'package:polymer_perf_elements/measure_load.dart';
@@ -43,9 +54,28 @@
           // and add measurements, the graph will automatically render again
           // by default in the next frame.
           var loadTime = (querySelector('measure-load') as MeasureLoad);
+
+          // Add the global js variables we made in <head> as marks.
+          loadTime.mark('head', context['head']);
+          loadTime.mark('platform', context['platform']);
+          loadTime.mark('polymerHtml', context['polymerHtml']);
+          loadTime.mark('elementImports', context['elementImports']);
+          loadTime.mark('bodyStart', context['bodyStart']);
+          loadTime.mark('bodyEnd', context['bodyEnd']);
+
+          // And the dart variables in main/init/onReady.
           loadTime.mark('main', mainTime);
           loadTime.mark('initDone', initPolymerTime);
           loadTime.mark('polymerReady', polymerOnReadyTime);
+
+          // And finally add a bunch of measurements to the graph.
+          loadTime.measure('starttime -> head', 'starttime', 'head');
+          loadTime.measure('platform.js', 'head', 'platform');
+          loadTime.measure('polymer.html', 'platform', 'polymerHtml');
+          loadTime.measure('element imports', 'polymerHtml', 'elementImports');
+          loadTime.measure('head -> bodyStart', 'head', 'bodyStart');
+          loadTime.measure('bodyStart -> bodyEnd', 'bodyStart', 'bodyEnd');
+          loadTime.measure('bodyEnd -> main', 'bodyEnd', 'main');
           loadTime.measure('start -> main', 'starttime', 'main');
           loadTime.measure('main -> init done', 'main', 'initDone');
           loadTime.measure(
@@ -66,5 +96,6 @@
       });
     }
   </script>
+  <script>var bodyEnd = (new Date()).getTime();</script>
 </body>
 </html>
