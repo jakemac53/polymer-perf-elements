@@ -7,4 +7,5 @@ dependencies:
 transformers:
 - polymer:
     entry_points:
-    - example/index.html
+    - example/create.html
+    - example/load.html
