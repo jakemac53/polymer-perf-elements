@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style type="text/css">
+    iframe {display: none;}
+    table {width: 100%;}
+    td, th {
+      text-align: left;
+      border-bottom: solid 1px black;
+    }
+    tr :last-child {
+      width: 100%;
+    }
+    .hidden {display: none;}
+  </style>
+</head>
+<body>
+  <div id="loadTest">
+    <h2>
+      Load times (milliseconds)
+      <button class="run">run test</button>
+    </h2>
+    <table class="results hidden">
+      <thead><tr>
+        <th>Measure</th>
+        <th>Mean</th>
+        <th>Median</th>
+        <th>All runs</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="holder"></div>
+  </div>
+
+  <div id="createTest">
+    <h2>
+      Element creation times (milliseconds)
+      <button class="run">run test</button>
+    </h2>
+    <table class="results hidden">
+      <thead><tr>
+        <th>Measure</th>
+        <th>Mean</th>
+        <th>Median</th>
+        <th>All runs</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="holder"></div>
+  </div>
+
+  <script type="application/dart">
+    import 'dart:async';
+    import 'dart:html';
+    import 'dart:js';
+    import 'package:episodes/src/constants.dart';
+
+    main() {
+      var createTest = querySelector('#createTest');
+      var loadTest = querySelector('#loadTest');
+
+      createTest.querySelector('.run').onClick.listen(
+          (_) => runTest(createTest, 'create.html'));
+      loadTest.querySelector('.run').onClick.listen(
+          (_) => runTest(loadTest, 'load.html'));
+    }
+
+    void runTest(DivElement test, String path) {
+      ButtonElement button = test.querySelector(".run");
+      test.querySelector('.hidden').classes.remove('hidden');
+
+      Map<String, List<int>> measures = {};
+      button.disabled = true;
+      _runNextTest(test, path, measures).then((_) {
+        button.disabled = false;
+      });
+    }
+
+    Future _runNextTest(
+        DivElement test, String path, Map<String, List<int>> measures,
+        [numToRun = 10, testNum = 0, Completer completer]) {
+      if (completer == null) completer = new Completer();
+
+      if (testNum == numToRun) {
+        completer.complete();
+        return completer.future;
+      };
+
+      DivElement loadDiv = test.querySelector('.holder');
+      loadDiv.innerHtml = '';
+      IFrameElement iframe = new IFrameElement()..src=path;
+      loadDiv.append(iframe);
+
+      var jsIframe = new JsObject.fromBrowserObject(iframe);
+      var contentWindow = jsIframe['contentWindow'];
+      jsIframe['contentWindow'].callMethod('addEventListener', ['message', (e) {
+        if (_handleEpisodeMessage(measures, e)) {
+          _updateStats(test, measures);
+          _runNextTest(
+              test, path, measures, numToRun, ++testNum, completer);
+        }
+      }]);
+
+      return completer.future;
+    }
+
+    /**
+     * _handleEpisodeMessage is the listener for the Episodes
+     * window.postMessage events.
+     */
+    bool _handleEpisodeMessage(Map<String, List<int>> measures, e) {
+      var message = e['data'];
+      // Split the message on ':' and make sure the prefix is EPISODES.
+      var parts = message.split(':');
+      if (parts[0] == PREFIX) {
+        var action = parts[1];
+        // We only care about the measurements for now.
+        if (action == MEASURE) {
+          var name = parts[2];
+          var time = int.parse(parts[4]) - int.parse(parts[3]);
+          if (measures[name] == null) measures[name] = new List<int>();
+          measures[name].add(time);
+          return false;
+        } else if (action == DONE) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    void _updateStats(DivElement test, Map<String, List<int>> measures) {
+      var results = test.querySelector('.results tbody');
+      results.innerHtml = '';
+      measures.forEach((String measure, List<int> times) {
+        times.sort();
+
+        var mean = 0;
+        for (var time in times) mean += time;
+        mean = (mean / times.length).floor();
+
+        var median;
+        if (times.length == 1) {
+          median = times[0];
+        } else if (times.length % 2 == 1) {
+          median = times[(times.length / 2).floor()];
+        } else {
+          var half = (times.length / 2).toInt();
+          median = (times[half - 1] + times[half]) / 2;
+        }
+        median = median.floor();
+
+        results.appendHtml(
+            '<tr>'
+              '<td>$measure</td><td>$mean</td><td>$median</td>'
+              '<td>$times</td>'
+            '</tr>');
+      });
+    }
+
+  </script>
+</body>
+</html>

@@ -9,14 +9,8 @@
   <polymer-element name="x-a">
     <template>I am an x-a!</template>
   </polymer-element>
-  <h2>Custom element creation, 100 elements</h2>
-  <measure-create id="create100" numToCreate="100" tagName="x-a">
-  </measure-create>
   <h2>Custom element creation, 1000 elements</h2>
-  <measure-create id="create1000" numToCreate="1000" tagName="x-a">
-  </measure-create>
-  <h2>Custom element creation, 10000 elements</h2>
-  <measure-create id="create10000" numToCreate="10000" tagName="x-a">
+  <measure-create id="create" numToCreate="1000" tagName="x-a">
   </measure-create>
 
   <script type="application/dart">
@@ -34,14 +28,9 @@
       initPolymer().run(() {
         Polymer.onReady.then((_) {
           // Auto-run our other tests.
-          new Future(() {}).then((_) {
-            var create100 = (querySelector('#create100') as MeasureCreate);
-            var create1000 = (querySelector('#create1000') as MeasureCreate);
-            var create10000 = (querySelector('#create10000') as MeasureCreate);
-            create100.test().then(
-                (_) => create1000.test()).then(
-                    (_) => create10000.test());
-          });
+          new Future(() {}).then((_) =>
+            (querySelector('#create') as MeasureCreate).test()
+          ).then((episode) => episode.done());
         });
       });
     }

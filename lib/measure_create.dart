@@ -25,19 +25,20 @@ class MeasureCreate extends PolymerElement {
     status.innerHtml = 'creating elements...';
     drawing.style.height = '0px';
     return new Future(() {}).then((_) {
-      return measureAddingElements().then((_) {
+      return measureAddingElements().then((episode) {
         _testing = false;
         button.disabled = false;
         button.text = 'test again';
         drawing.style.height = 'auto';
         status.innerHtml = '';
+        return episode;
       });
     });
   }
 
   Future<Episodes> measureAddingElements() {
     container.innerHtml = '';
-    var episode = new Episodes(false, false, false, true);
+    var episode = new Episodes(true, false, false, true);
     episode.clearAllEpisodes();
     episode.clearAllMarks();
 

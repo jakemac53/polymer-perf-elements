@@ -62,6 +62,8 @@
               'init done -> polymer ready', 'initDone', 'polymerReady');
           loadTime.measure(
               'start -> polymer ready', 'starttime', 'polymerReady');
+
+          loadTime.episode.done();
         });
       });
     }
