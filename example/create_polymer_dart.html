@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="import" href="packages/polymer/polymer.html">
+  <link rel="import" href="packages/polymer_perf_elements/measure_create.html">
+</head>
+<body unresolved>
+
+  <polymer-element name="x-a">
+  </polymer-element>
+  <h2>Custom element creation, 1000 elements</h2>
+  <measure-create id="create" numToCreate="1000" tagName="x-a">
+  </measure-create>
+
+  <script type="application/dart">
+    import 'dart:async';
+    import 'dart:html';
+    import 'package:polymer/polymer.dart';
+    import 'package:polymer_perf_elements/measure_create.dart';
+
+    @CustomTag('x-a')
+    class XA extends PolymerElement {
+      XA.created() : super.created();
+    }
+
+    main() {
+      initPolymer().run(() {
+        Polymer.onReady.then((_) {
+          // Auto-run our other tests.
+          new Future(() {}).then((_) =>
+            (querySelector('#create') as MeasureCreate).test()
+          ).then((episode) => episode.done());
+        });
+      });
+    }
+  </script>
+</body>
+</html>

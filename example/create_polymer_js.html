@@ -6,8 +6,7 @@
 </head>
 <body unresolved>
 
-  <polymer-element name="x-a">
-    <template>I am an x-a!</template>
+  <polymer-element name="x-a" noscript>
   </polymer-element>
   <h2>Custom element creation, 1000 elements</h2>
   <measure-create id="create" numToCreate="1000" tagName="x-a">
@@ -18,11 +17,6 @@
     import 'dart:html';
     import 'package:polymer/polymer.dart';
     import 'package:polymer_perf_elements/measure_create.dart';
-
-    @CustomTag('x-a')
-    class XA extends PolymerElement {
-      XA.created() : super.created();
-    }
 
     main() {
       initPolymer().run(() {

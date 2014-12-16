@@ -4,9 +4,14 @@ description: Some simple elements to help doing common performance measurements 
 dependencies:
   episodes: ">=0.4.0+1 <0.4.1"
   polymer: ">=0.15.0 <0.16.0"
+  web_components: ">=0.10.0 <0.11.0"
 transformers:
 - polymer:
     entry_points:
-    - example/create.html
+    - example/create_custom_dart_element.html
+    - example/create_custom_js_element.html
+    - example/create_div.html
+    - example/create_polymer_dart.html
+    - example/create_polymer_js.html
     - example/index.html
     - example/load.html
