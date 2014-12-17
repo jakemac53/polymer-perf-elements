@@ -8,7 +8,7 @@ import 'package:polymer/polymer.dart';
 class PerfTestRunner extends PolymerElement {
   @published String testTitle;
   @published String testUrl;
-  @published int timesToRun = 10;
+  @published int timesToRun = 5;
   @observable bool hidden = true;
 
   PerfTestRunner.created() : super.created();
@@ -31,13 +31,13 @@ class PerfTestRunner extends PolymerElement {
 
   void toggle() { hidden = !hidden; }
 
-  void runTest() {
+  Future runTest() {
     toggleResults.attributes.remove('hidden');
     hidden = false;
 
     Map<String, List<int>> measures = {};
     runButton.disabled = true;
-    _runNextTest(measures).then((_) {
+    return _runNextTest(measures).then((_) {
       runButton.disabled = false;
     });
   }

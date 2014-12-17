@@ -12,6 +12,7 @@ transformers:
     - example/create_custom_js_element.html
     - example/create_div.html
     - example/create_polymer_dart.html
+    - example/create_polymer_dart_no_ready.html
     - example/create_polymer_js.html
     - example/index.html
     - example/load.html

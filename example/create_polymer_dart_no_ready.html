@@ -2,21 +2,27 @@
 <html>
 <head>
   <link rel="import" href="packages/polymer/polymer.html">
-  <link rel="import" href="packages/polymer_perf_elements/measure_create.html">
+  <link rel="import" href="packages/polymer_perf_elements/measure_polymer_ready.html">
 </head>
 <body unresolved>
 
-  <polymer-element name="x-a" noscript>
+  <polymer-element name="x-a">
   </polymer-element>
-  <h2>Polymer Js element creation, 1000 elements</h2>
-  <measure-create id="create" numToCreate="1000" tagName="x-a">
-  </measure-create>
+  <h2>Polymer Dart element creation, 1000 elements</h2>
+  <measure-polymer-ready id="create" numToCreate="1000" tagName="x-a">
+  </measure-polymer-ready>
 
   <script type="application/dart">
     import 'dart:async';
     import 'dart:html';
     import 'package:polymer/polymer.dart';
     import 'package:polymer_perf_elements/measure_create.dart';
+
+    @CustomTag('x-a')
+    // We don't call polymerReady here, the test will do that separately.
+    class XA extends HtmlElement with Polymer, Observable {
+      XA.created() : super.created();
+    }
 
     main() {
       initPolymer().run(() {

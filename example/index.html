@@ -4,14 +4,41 @@
   <link rel="import" href="../../packages/polymer_perf_elements/perf_test_runner.html">
 </head>
 <body>
+  <button id="runAll" disabled>Run all tests</button>
   <perf-test-runner testTitle="Load times" testUrl="load.html"></perf-test-runner>
   <perf-test-runner testTitle="Div element creation" testUrl="create_div.html"></perf-test-runner>
   <perf-test-runner testTitle="Custom Dart element creation" testUrl="create_custom_dart_element.html"></perf-test-runner>
   <perf-test-runner testTitle="Custom Js element creation" testUrl="create_custom_js_element.html"></perf-test-runner>
   <perf-test-runner testTitle="Polymer Dart element creation" testUrl="create_polymer_dart.html"></perf-test-runner>
+  <perf-test-runner testTitle="Polymer Dart element creation separating out PolymerReady" testUrl="create_polymer_dart_no_ready.html"></perf-test-runner>
   <perf-test-runner testTitle="Polymer Js element creation" testUrl="create_polymer_js.html"></perf-test-runner>
   <script type="application/dart">
-    export 'package:polymer/init.dart';
+    import 'dart:async';
+    import 'dart:html';
+    import 'package:polymer_perf_elements/perf_test_runner.dart';
+    import 'package:polymer/polymer.dart';
+
+    Future runNext(List<PerfTestRunner> tests, [int testNum = 0]) {
+      if (testNum >= tests.length) return new Future(() {});
+      return tests[testNum].runTest().then((_) {
+        tests[testNum].hidden = false;
+        return runNext(tests, ++testNum);
+      });
+    }
+
+    main() {
+      initPolymer().run(() => Polymer.onReady.then((_) {
+        var runAll = querySelector('#runAll') as ButtonElement;
+        runAll.onClick.listen((_) {
+          runAll.disabled = true;
+          var tests =
+              querySelectorAll('perf-test-runner') as List<PerfTestRunner>;
+          tests.forEach((PerfTestRunner test) => test.hidden = true);
+          runNext(tests).then((_) => runAll.disabled = false);
+        });
+        runAll.disabled = false;
+      }));
+    }
   </script>
 </body>
 </html>

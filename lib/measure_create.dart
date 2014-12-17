@@ -7,8 +7,10 @@ import 'package:polymer/polymer.dart';
 class MeasureCreate extends PolymerElement {
   @published String numToCreate = '1000';
   @published String tagName = 'div';
+  @published int warmupTime = 500;
 
   bool _testing = false;
+  Completer _warmupDone = new Completer();
 
   MeasureCreate.created() : super.created();
 
@@ -17,7 +19,27 @@ class MeasureCreate extends PolymerElement {
   DivElement get status => $['status'];
   ButtonElement get button => $['button'];
 
-  Future<Episodes> test() {
+  ready() {
+    _warmup();
+  }
+
+  Future _warmup([Stopwatch watch]) {
+    if (watch == null) watch = new Stopwatch()..start();
+    if (watch.elapsedMilliseconds > warmupTime) {
+      _warmupDone.complete();
+      button.disabled = false;
+      return new Future(() {});
+    } else {
+      return test(true).then((_) => _warmup(watch));
+    }
+  }
+
+  Future<Episodes> testAction() => test();
+
+  Future<Episodes> test([bool warmup = false]) {
+    if ((!warmup && !_warmupDone.isCompleted)) {
+      return _warmupDone.future.then((_) => test());
+    }
     if (_testing) return null;
     button.disabled = true;
     button.text = 'test';
@@ -25,7 +47,7 @@ class MeasureCreate extends PolymerElement {
     status.innerHtml = 'creating elements...';
     drawing.style.height = '0px';
     return new Future(() {}).then((_) {
-      return measureAddingElements().then((episode) {
+      return measureAddingElements(warmup).then((episode) {
         _testing = false;
         button.disabled = false;
         button.text = 'test again';
@@ -36,18 +58,14 @@ class MeasureCreate extends PolymerElement {
     });
   }
 
-  Future<Episodes> measureAddingElements() {
+  Future<Episodes> measureAddingElements(bool warmup) {
     container.innerHtml = '';
-    var episode = new Episodes(true, false, false, true);
+    var episode = new Episodes(!warmup, false, false, true);
     episode.clearAllEpisodes();
     episode.clearAllMarks();
 
     var num = int.parse(numToCreate);
-    episode.mark('start creating');
-    addElements(num);
-    episode.mark('creation done');
-    episode.measure(
-        'create/append $num $tagName\'s', 'start creating', 'creation done');
+    addElements(num, episode);
     
     status.innerHtml = 'waiting for end of microtask...';
     return new Future.value().then((_) {
@@ -66,7 +84,7 @@ class MeasureCreate extends PolymerElement {
         return new Future(() {}).then((_) {
           episode.mark('delete done');
           episode.measure('delete time', 'before delete', 'delete done');
-          episode.drawEpisodes(drawing, false);
+          if (!warmup) episode.drawEpisodes(drawing, false);
           status.innerHtml = '';
           return new Future(() => episode);
         });
@@ -74,9 +92,32 @@ class MeasureCreate extends PolymerElement {
     });
   }
 
-  void addElements(int num) {
+  void addElements(int num, Episodes episode) {
+    var elements = createElements(num, episode);
+    appendElements(elements, episode);
+    episode.measure(
+        'create/append $num $tagName\'s', 'start creating', 'appending done');
+  }
+
+  List<Element> createElements(int num, Episodes episode) {
+    var elements = new List<Element>(num);
+    episode.mark('start creating');
     for (int i = 0; i < num; ++i) {
-      container.append(new Element.tag(tagName));
+      elements[i] = new Element.tag(tagName);
     }
+    episode.mark('creation done');
+    episode.measure(
+        'create $num $tagName\'s', 'start creating', 'creation done');
+    return elements;
+  }
+
+  void appendElements(List<Element> elements, Episodes episode) {
+    episode.mark('start appending');
+    for (Element e in elements) {
+      container.append(e);
+    }
+    episode.mark('appending done');
+    episode.measure(
+        'append $num $tagName\'s', 'start appending', 'appending done');
   }
 }
